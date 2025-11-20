@@ -1,9 +1,15 @@
 """
 FastAPI 主应用
+
+本模块是 FastAPI 应用的入口文件，负责：
+- 应用初始化和配置
+- 中间件注册（统一由 setup_middleware 管理）
+- 路由注册
+- 生命周期管理（数据库连接等）
+- 全局异常处理
 """
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
 
@@ -11,6 +17,7 @@ from app.core.config import settings
 from app.db.database import init_db, close_db
 from app.db.redis import RedisClient
 from app.api.v1.api import api_router
+from app.api.middleware import setup_middleware
 
 
 @asynccontextmanager
@@ -41,21 +48,18 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS 中间件
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # 可信主机中间件（生产环境）
+# 注意：此中间件需要在其他中间件之前注册
 if not settings.DEBUG:
     app.add_middleware(
         TrustedHostMiddleware,
         allowed_hosts=["*"],  # 生产环境应该配置具体域名
     )
+
+# 注册所有自定义中间件
+# 包括：ErrorHandling、RequestLogging、PerformanceMonitoring、RateLimit、SecurityHeaders、CORS
+# 注意：setup_middleware 会按正确的顺序注册所有中间件
+setup_middleware(app)
 
 
 # 全局异常处理
