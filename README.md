@@ -444,18 +444,15 @@ A: 使用提供的备份脚本：
 **未经授权不得用于商业用途。**
 
 如需商业授权，请联系：
-- 邮箱: license@appleid-auto.com
-- 微信: xxx
-
+- 邮箱: support@yszcpay.de
+  
 ---
 
 ## 📞 联系方式
 
 - **作者**: @Tracy
-- **邮箱**: support@appleid-auto.com
-- **官网**: https://appleid-auto.com
-- **文档**: https://docs.appleid-auto.com
-- **GitHub**: https://github.com/yourusername/appleid-auto
+- **邮箱**: support@yszcpay.de
+- **GitHub**: https://github.com/CloudsOoo/appleid-auto
 
 ---
 
