@@ -56,6 +56,21 @@ class Settings(BaseSettings):
             return [i.strip() for i in v.split(",")]
         return v
 
+    @property
+    def ALLOWED_ORIGINS(self) -> List[str]:
+        """获取允许的跨域源列表（兼容属性）"""
+        return self.CORS_ORIGINS
+
+    @property
+    def ENVIRONMENT(self) -> str:
+        """获取当前环境（兼容属性）"""
+        return self.APP_ENV
+
+    @property
+    def ENABLE_RATE_LIMIT(self) -> bool:
+        """是否启用限流（兼容属性）"""
+        return self.RATE_LIMIT_ENABLED
+
     # 文件上传
     MAX_UPLOAD_SIZE: int = 10485760  # 10MB
     UPLOAD_DIR: str = "./uploads"
