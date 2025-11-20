@@ -166,7 +166,7 @@ Apple ID 自动解锁系统是一个功能强大的商业级 SaaS 平台，专�
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/yourusername/appleid-auto.git
+git clone https://github.com/CloudsOoo/appleid-auto.git
 cd appleid-auto
 
 # 2. 配置环境变量
