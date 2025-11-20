@@ -1214,19 +1214,83 @@ Authorization: Bearer {access_token}
 
 ---
 
-## 8. 套餐管理模块（管理员）
+## 8. 套餐管理模块
 
-### 8.1 套餐列表
+### 8.1 获取套餐列表（公开接口）
 ```
-GET /admin/packages?page=1&per_page=20
+GET /packages
+```
+
+**说明**: 无需登录，所有用户可访问。仅返回激活的套餐。
+
+**响应**:
+```json
+{
+  "code": 200,
+  "data": [
+    {
+      "id": 1,
+      "name": "免费版",
+      "description": "适合个人用户",
+      "max_accounts": 10,
+      "max_share_pages": 5,
+      "max_nodes": 1,
+      "min_unlock_interval": 3600,
+      "allow_custom_html": false,
+      "allow_view_password_history": false,
+      "allow_batch_import": true,
+      "allow_api_access": false,
+      "max_unlock_per_day": 100,
+      "max_import_per_time": 100,
+      "price": 0.00,
+      "currency": "CNY",
+      "is_active": true,
+      "sort_order": 1,
+      "created_at": "2025-11-20T10:00:00Z"
+    },
+    {
+      "id": 2,
+      "name": "专业版",
+      "description": "适合中小企业",
+      "max_accounts": 200,
+      "max_share_pages": 20,
+      "max_nodes": 5,
+      "min_unlock_interval": 600,
+      "allow_custom_html": true,
+      "allow_view_password_history": true,
+      "allow_batch_import": true,
+      "allow_api_access": true,
+      "max_unlock_per_day": 500,
+      "max_import_per_time": 500,
+      "price": 299.00,
+      "currency": "CNY",
+      "is_active": true,
+      "sort_order": 2,
+      "created_at": "2025-11-20T10:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+### 8.2 管理员：获取套餐列表（含禁用）
+```
+GET /packages/admin/packages?page=1&per_page=20&include_inactive=true
 Authorization: Bearer {admin_access_token}
 ```
+
+**说明**: 管理员接口，可查看所有套餐（包括禁用的）。
 
 **响应**:
 ```json
 {
   "code": 200,
   "data": {
+    "total": 4,
+    "page": 1,
+    "per_page": 20,
+    "total_pages": 1,
     "items": [
       {
         "id": 1,
@@ -1239,33 +1303,37 @@ Authorization: Bearer {admin_access_token}
         "price": 299.00,
         "is_active": true
       }
-    ],
-    "total": 4,
-    "page": 1,
-    "per_page": 20
+    ]
   }
 }
 ```
 
 ---
 
-### 8.2 创建套餐
+### 8.3 管理员：创建套餐
 ```
-POST /admin/packages
+POST /packages/admin/packages
 Authorization: Bearer {admin_access_token}
 ```
 
 **请求参数**:
 ```json
 {
-  "name": "旗舰版",
-  "description": "无限制使用",
-  "max_accounts": 9999,
+  "name": "企业版",
+  "description": "适合大型企业",
+  "max_accounts": 1000,
   "max_share_pages": 100,
-  "max_nodes": 50,
+  "max_nodes": 20,
+  "min_unlock_interval": 60,
   "allow_custom_html": true,
+  "allow_view_password_history": true,
+  "allow_batch_import": true,
   "allow_api_access": true,
-  "price": 1999.00
+  "max_unlock_per_day": 5000,
+  "max_import_per_time": 1000,
+  "price": 999.00,
+  "currency": "CNY",
+  "sort_order": 3
 }
 ```
 
@@ -1275,11 +1343,96 @@ Authorization: Bearer {admin_access_token}
   "code": 201,
   "message": "创建成功",
   "data": {
-    "id": 5,
-    "name": "旗舰版"
+    "id": 3,
+    "name": "企业版",
+    "description": "适合大型企业",
+    "max_accounts": 1000,
+    "price": 999.00,
+    "created_at": "2025-11-20T10:00:00Z"
   }
 }
 ```
+
+---
+
+### 8.4 管理员：获取套餐详情
+```
+GET /packages/admin/packages/{package_id}
+Authorization: Bearer {admin_access_token}
+```
+
+**响应**:
+```json
+{
+  "code": 200,
+  "data": {
+    "id": 1,
+    "name": "免费版",
+    "description": "适合个人用户",
+    "max_accounts": 10,
+    "max_share_pages": 5,
+    "max_nodes": 1,
+    "price": 0.00,
+    "is_active": true,
+    "created_at": "2025-11-20T10:00:00Z",
+    "updated_at": "2025-11-20T10:00:00Z"
+  }
+}
+```
+
+---
+
+### 8.5 管理员：更新套餐
+```
+PUT /packages/admin/packages/{package_id}
+Authorization: Bearer {admin_access_token}
+```
+
+**请求参数**（所有字段都是可选的）:
+```json
+{
+  "name": "专业版（升级）",
+  "price": 199.00,
+  "max_accounts": 150,
+  "is_active": true
+}
+```
+
+**响应**:
+```json
+{
+  "code": 200,
+  "message": "更新成功",
+  "data": {
+    "id": 1,
+    "name": "专业版（升级）",
+    "price": 199.00,
+    "max_accounts": 150,
+    "updated_at": "2025-11-20T11:00:00Z"
+  }
+}
+```
+
+---
+
+### 8.6 管理员：删除套餐
+```
+DELETE /packages/admin/packages/{package_id}
+Authorization: Bearer {admin_access_token}
+```
+
+**响应**:
+```json
+{
+  "code": 204,
+  "message": "删除成功"
+}
+```
+
+**注意事项**:
+- 删除套餐是永久性的，无法恢复
+- 如果有卡密或用户权限关联此套餐，建议禁用而不是删除
+- 建议先将 `is_active` 设为 false，观察一段时间后再删除
 
 ---
 
@@ -1341,53 +1494,139 @@ Authorization: Bearer {admin_access_token}
 
 ## 10. 统计分析模块
 
-### 10.1 用户统计
+### 10.1 用户统计概览
 ```
 GET /stats/overview
 Authorization: Bearer {access_token}
 ```
 
+**说明**: 获取当前用户的统计数据。
+
 **响应**:
 ```json
 {
   "code": 200,
   "data": {
-    "total_accounts": 45,
-    "normal_accounts": 40,
-    "locked_accounts": 5,
-    "total_unlocks": 150,
-    "success_rate": 95.5,
-    "total_share_pages": 5,
-    "total_views": 1200,
-    "active_nodes": 2,
-    "active_proxies": 10
+    "user_info": {
+      "user_id": 1,
+      "username": "user1",
+      "email": "user1@example.com",
+      "is_active": true
+    },
+    "accounts": {
+      "total": 50,
+      "locked": 5,
+      "normal": 45,
+      "max_accounts": 100
+    },
+    "tasks": {
+      "total": 120,
+      "pending": 3,
+      "in_progress": 2,
+      "completed": 100,
+      "failed": 15,
+      "success_rate": 86.96
+    },
+    "share_pages": {
+      "total": 10,
+      "enabled": 8,
+      "disabled": 2,
+      "total_views": 1234,
+      "max_share_pages": 20
+    },
+    "permission": {
+      "expires_at": "2025-12-31T00:00:00Z",
+      "days_remaining": 365,
+      "is_expired": false,
+      "unlock_count_today": 15,
+      "max_unlock_per_day": 500
+    },
+    "nodes": {
+      "total": 3,
+      "online": 2,
+      "offline": 1,
+      "max_nodes": 5
+    }
   }
 }
 ```
+
+**统计维度说明**:
+- **user_info**: 用户基本信息
+- **accounts**: 账号统计（总数、已锁定、正常、配额）
+- **tasks**: 任务统计（各状态分布、成功率）
+- **share_pages**: 分享页统计（总数、启用数、访问次数）
+- **permission**: 权限信息（有效期、剩余天数、今日解锁次数）
+- **nodes**: 节点统计（总数、在线、离线）
 
 ---
 
-### 10.2 管理员统计
+### 10.2 管理员统计概览
 ```
-GET /admin/stats/overview
+GET /stats/admin/overview
 Authorization: Bearer {admin_access_token}
 ```
+
+**说明**: 获取系统整体运营数据（仅管理员）。
 
 **响应**:
 ```json
 {
   "code": 200,
   "data": {
-    "total_users": 500,
-    "active_users": 450,
-    "total_accounts": 10000,
-    "total_unlocks_today": 2000,
-    "total_cards": 1000,
-    "used_cards": 450,
-    "revenue": 150000.00
+    "users": {
+      "total": 1234,
+      "active": 1100,
+      "inactive": 134,
+      "today_new": 15
+    },
+    "accounts": {
+      "total": 12340,
+      "locked": 234,
+      "normal": 12106
+    },
+    "tasks": {
+      "total": 56789,
+      "pending": 120,
+      "in_progress": 45,
+      "completed": 50000,
+      "failed": 6624,
+      "success_rate": 88.33
+    },
+    "share_pages": {
+      "total": 567,
+      "enabled": 450,
+      "disabled": 117,
+      "total_views": 123456
+    },
+    "cards": {
+      "total": 500,
+      "activated": 300,
+      "unused": 150,
+      "revoked": 50
+    },
+    "nodes": {
+      "total": 89,
+      "online": 75,
+      "offline": 14
+    },
+    "proxies": {
+      "total": 234,
+      "available": 200,
+      "unavailable": 34
+    }
   }
 }
 ```
+
+**统计维度说明**:
+- **users**: 用户统计（总数、激活、禁用、今日新增）
+- **accounts**: 账号统计（总数、各状态分布）
+- **tasks**: 任务统计（总数、各状态分布、成功率）
+- **share_pages**: 分享页统计（总数、启用、禁用、总访问次数）
+- **cards**: 卡密统计（总数、已激活、未使用、已作废）
+- **nodes**: 节点统计（总数、在线、离线）
+- **proxies**: 代理统计（总数、可用、不可用）
 
 ---
 

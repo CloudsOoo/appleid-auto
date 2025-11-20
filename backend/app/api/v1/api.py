@@ -12,6 +12,8 @@ from app.api.v1.endpoints import (
     share_pages,
     proxies,
     nodes,
+    packages,
+    stats,
     admin,
 )
 
@@ -40,6 +42,12 @@ api_router.include_router(proxies.router, prefix="/proxies", tags=["代理池"])
 
 # 节点管理
 api_router.include_router(nodes.router, prefix="/nodes", tags=["节点管理"])
+
+# 套餐管理
+api_router.include_router(packages.router, tags=["套餐管理"])
+
+# 统计
+api_router.include_router(stats.router, tags=["统计"])
 
 # 管理员接口
 api_router.include_router(admin.router, prefix="/admin", tags=["管理员"])
