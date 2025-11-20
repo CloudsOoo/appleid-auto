@@ -1,5 +1,6 @@
 import type { Router } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { useUserStore } from '@/stores/user'
 
 /**
  * 路由守卫配置
@@ -11,43 +12,20 @@ import { ElMessage } from 'element-plus'
  * - 进度条控制
  */
 
-// TODO: 导入用户状态管理（Pinia store）
-// import { useUserStore } from '@/stores/user'
-
 /**
  * 检查用户是否已登录
- * TODO: 实现后需要从 Pinia store 获取登录状态
  */
 function isAuthenticated(): boolean {
-  // 临时实现：检查 localStorage 中是否有 token
-  const tokenKey = import.meta.env.VITE_TOKEN_KEY || 'appleid_access_token'
-  const token = localStorage.getItem(tokenKey)
-  return !!token
-
-  // 最终实现（需要 Pinia store）：
-  // const userStore = useUserStore()
-  // return userStore.isLoggedIn
+  const userStore = useUserStore()
+  return userStore.isLoggedIn
 }
 
 /**
  * 检查用户是否为管理员
- * TODO: 实现后需要从 Pinia store 获取用户角色
  */
 function isAdmin(): boolean {
-  // 临时实现：从 localStorage 获取用户信息
-  const userInfo = localStorage.getItem('user_info')
-  if (!userInfo) return false
-
-  try {
-    const user = JSON.parse(userInfo)
-    return user.role === 'admin'
-  } catch {
-    return false
-  }
-
-  // 最终实现（需要 Pinia store）：
-  // const userStore = useUserStore()
-  // return userStore.user?.role === 'admin'
+  const userStore = useUserStore()
+  return userStore.isAdmin
 }
 
 /**
