@@ -1,0 +1,14 @@
+# SSL 证书目录
+#
+# 生产环境部署时，请将以下文件放在此目录：
+# - cert.pem: SSL 证书
+# - key.pem: SSL 私钥
+#
+# 获取免费 SSL 证书：
+# 1. Let's Encrypt: https://letsencrypt.org/
+# 2. 使用 certbot: certbot certonly --standalone -d your-domain.com
+#
+# 自签名证书（仅供测试）：
+# openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+#   -keyout key.pem -out cert.pem \
+#   -subj "/CN=localhost"
