@@ -15,6 +15,11 @@ setlocal enabledelayedexpansion
 ::
 :: ============================================================
 
+:: 项目配置
+set "REPO_URL=https://github.com/CloudsOoo/appleid-auto.git"
+set "BRANCH_NAME=claude/appleid-auto/main"
+set "ZIP_URL=https://github.com/CloudsOoo/appleid-auto/archive/refs/heads/claude/appleid-auto/main.zip"
+
 title Apple ID 自动解锁系统 - 安装程序
 
 echo.
@@ -78,18 +83,18 @@ if exist "%INSTALL_DIR%" (
     if /i "!UPDATE!"=="Y" (
         cd /d "%INSTALL_DIR%"
         if %USE_GIT%==1 (
-            git pull origin main 2>nul || git pull origin master 2>nul
+            git pull origin %BRANCH_NAME% 2>nul || git pull origin main 2>nul
         )
     )
 ) else (
     if %USE_GIT%==1 (
         echo [步骤] 正在克隆项目...
-        git clone https://github.com/CloudsOoo/appleid-auto.git "%INSTALL_DIR%"
+        git clone -b %BRANCH_NAME% %REPO_URL% "%INSTALL_DIR%"
     ) else (
         echo [步骤] 正在下载项目...
-        powershell -Command "Invoke-WebRequest -Uri 'https://github.com/CloudsOoo/appleid-auto/archive/refs/heads/main.zip' -OutFile '%TEMP%\appleid-auto.zip'"
+        powershell -Command "Invoke-WebRequest -Uri '%ZIP_URL%' -OutFile '%TEMP%\appleid-auto.zip'"
         powershell -Command "Expand-Archive -Path '%TEMP%\appleid-auto.zip' -DestinationPath '%USERPROFILE%' -Force"
-        ren "%USERPROFILE%\appleid-auto-main" "appleid-auto"
+        ren "%USERPROFILE%\appleid-auto-claude-appleid-auto-main" "appleid-auto"
     )
 )
 
