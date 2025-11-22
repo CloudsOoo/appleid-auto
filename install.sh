@@ -222,18 +222,32 @@ interactive_read() {
     local var_name="$2"
     local default="$3"
     local secret="$4"
+    local input=""
 
-    if is_interactive; then
-        if [ "$secret" = "true" ]; then
-            read -sp "$prompt" "$var_name" </dev/tty 2>/dev/null || eval "$var_name=''"
-            echo ""
-        else
-            read -p "$prompt" "$var_name" </dev/tty 2>/dev/null || eval "$var_name=''"
-        fi
+    # 临时禁用 set -e 防止 read 失败导致脚本退出
+    set +e
+
+    # 打印提示到 tty
+    echo -n "$prompt" > /dev/tty 2>/dev/null
+
+    # 从 tty 读取输入
+    if [ "$secret" = "true" ]; then
+        read -r -s input < /dev/tty 2>/dev/null
+        echo > /dev/tty 2>/dev/null  # 密码输入后换行
+    else
+        read -r input < /dev/tty 2>/dev/null
     fi
 
-    # 如果为空则使用默认值
-    eval "[ -z \"\$$var_name\" ] && $var_name='$default'"
+    # 重新启用 set -e
+    set -e
+
+    # 如果输入为空则使用默认值
+    if [ -z "$input" ]; then
+        input="$default"
+    fi
+
+    # 设置变量值
+    eval "$var_name='$input'"
 }
 
 # 克隆或更新项目
@@ -243,8 +257,11 @@ clone_project() {
     if [ -d "$INSTALL_DIR" ]; then
         log_info "项目目录已存在: $INSTALL_DIR"
         if is_interactive; then
-            read -p "是否更新到最新版本？(y/n) " -n 1 -r </dev/tty 2>/dev/null || REPLY="y"
-            echo
+            set +e
+            echo -n "是否更新到最新版本？(y/n) " > /dev/tty 2>/dev/null
+            read -r -n 1 REPLY < /dev/tty 2>/dev/null
+            echo > /dev/tty 2>/dev/null
+            set -e
         else
             log_info "非交互模式，自动更新到最新版本"
             REPLY="y"
@@ -271,8 +288,11 @@ configure_env() {
     if [ -f "$ENV_FILE" ]; then
         log_info "环境配置文件已存在"
         if is_interactive; then
-            read -p "是否重新生成配置？(y/n) " -n 1 -r </dev/tty 2>/dev/null || REPLY="n"
-            echo
+            set +e
+            echo -n "是否重新生成配置？(y/n) " > /dev/tty 2>/dev/null
+            read -r -n 1 REPLY < /dev/tty 2>/dev/null
+            echo > /dev/tty 2>/dev/null
+            set -e
             if [[ ! $REPLY =~ ^[Yy]$ ]]; then
                 return 0
             fi
