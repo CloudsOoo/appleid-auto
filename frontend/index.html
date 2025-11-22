@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <!-- 基础 Meta -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+  <!-- SEO Meta -->
+  <title>Apple ID 自动解锁系统</title>
+  <meta name="description" content="Apple ID 自动解锁系统 - 高效、安全的 Apple ID 账号管理解决方案" />
+  <meta name="keywords" content="Apple ID, 解锁, 账号管理, iCloud" />
+  <meta name="author" content="AppleID Auto Unlock Team" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph / 社交分享 -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Apple ID 自动解锁系统" />
+  <meta property="og:description" content="高效、安全的 Apple ID 账号管理解决方案" />
+  <meta property="og:image" content="/og-image.png" />
+  <meta property="og:url" content="https://yourdomain.com" />
+  <meta property="og:site_name" content="Apple ID Auto Unlock" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Apple ID 自动解锁系统" />
+  <meta name="twitter:description" content="高效、安全的 Apple ID 账号管理解决方案" />
+  <meta name="twitter:image" content="/twitter-image.png" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#409eff" />
+
+  <!-- 主题色 -->
+  <meta name="theme-color" content="#409eff" />
+  <meta name="msapplication-TileColor" content="#409eff" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+  <!-- PWA 配置 -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="AppleID Unlock" />
+  <meta name="application-name" content="AppleID Unlock" />
+
+  <!-- 预连接 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- DNS 预解析 -->
+  <link rel="dns-prefetch" href="//api.yourdomain.com" />
+
+  <!-- 关键 CSS（内联关键样式，加快首屏渲染） -->
+  <style>
+    /* 页面加载动画 */
+    #app-loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      z-index: 9999;
+      transition: opacity 0.3s ease;
+    }
+
+    #app-loading.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-logo {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 24px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+      margin-top: 16px;
+      color: rgba(255, 255, 255, 0.9);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.8; }
+    }
+
+    /* 防止 FOUC (Flash of Unstyled Content) */
+    html {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    /* 隐藏未挂载的 Vue app */
+    #app:empty {
+      display: none;
+    }
+
+    /* 基础重置 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+        'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* 暗色主题基础支持 */
+    html[data-theme="dark"] {
+      color-scheme: dark;
+    }
+
+    html[data-theme="dark"] #app-loading {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
+
+    /* 无脚本提示 */
+    noscript {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #f5f7fa;
+      color: #606266;
+      font-size: 16px;
+      text-align: center;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- 无脚本提示 -->
+  <noscript>
+    <div>
+      <h2>请启用 JavaScript</h2>
+      <p>Apple ID 自动解锁系统需要 JavaScript 支持才能正常运行。</p>
+      <p>请在浏览器设置中启用 JavaScript，然后刷新页面。</p>
+    </div>
+  </noscript>
+
+  <!-- 加载动画（Vue 挂载后移除） -->
+  <div id="app-loading">
+    <svg class="loading-logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Apple 风格 Logo -->
+      <circle cx="50" cy="50" r="45" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none"/>
+      <circle cx="50" cy="50" r="35" stroke="rgba(255,255,255,0.5)" stroke-width="2" fill="none"/>
+      <path d="M50 25 L50 50 L70 60" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <circle cx="50" cy="50" r="5" fill="#fff"/>
+    </svg>
+    <div class="loading-spinner"></div>
+    <p class="loading-text">正在加载...</p>
+  </div>
+
+  <!-- Vue 应用挂载点 -->
+  <div id="app"></div>
+
+  <!-- 移除加载动画脚本 -->
+  <script>
+    // 监听 Vue 应用挂载
+    window.addEventListener('load', function() {
+      // 延迟移除加载动画，确保 Vue 已完全渲染
+      setTimeout(function() {
+        var loading = document.getElementById('app-loading');
+        if (loading) {
+          loading.classList.add('fade-out');
+          setTimeout(function() {
+            loading.remove();
+          }, 300);
+        }
+      }, 500);
+    });
+
+    // 错误处理
+    window.addEventListener('error', function(e) {
+      console.error('Global error:', e.error);
+    });
+
+    // 检测浏览器兼容性
+    (function() {
+      var isModern = 'fetch' in window &&
+                     'Promise' in window &&
+                     'assign' in Object &&
+                     'includes' in Array.prototype;
+
+      if (!isModern) {
+        var loading = document.getElementById('app-loading');
+        if (loading) {
+          loading.innerHTML = '<div style="text-align:center;color:#fff;padding:20px;">' +
+            '<h2>浏览器版本过低</h2>' +
+            '<p>请升级到最新版本的 Chrome、Firefox、Safari 或 Edge 浏览器。</p>' +
+            '</div>';
+        }
+      }
+    })();
+  </script>
+
+  <!-- Vite 入口 -->
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
