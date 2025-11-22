@@ -5,14 +5,18 @@
 # ============================================================
 #
 # 使用方法：
-#   curl -fsSL https://raw.githubusercontent.com/CloudsOoo/appleid-auto/main/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/CloudsOoo/appleid-auto/claude/appleid-auto/main/install.sh | bash
 #   或
-#   wget -qO- https://raw.githubusercontent.com/CloudsOoo/appleid-auto/main/install.sh | bash
+#   wget -qO- https://raw.githubusercontent.com/CloudsOoo/appleid-auto/claude/appleid-auto/main/install.sh | bash
 #   或
 #   bash install.sh
 #
 # 支持系统：Ubuntu 18.04+, Debian 10+, CentOS 7+, macOS
 # ============================================================
+
+# 项目配置
+REPO_URL="https://github.com/CloudsOoo/appleid-auto.git"
+BRANCH_NAME="claude/appleid-auto/main"
 
 set -e
 
@@ -208,11 +212,11 @@ clone_project() {
         echo
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             cd "$INSTALL_DIR"
-            git pull origin main 2>/dev/null || git pull origin master 2>/dev/null || true
+            git pull origin "$BRANCH_NAME" 2>/dev/null || git pull origin main 2>/dev/null || true
         fi
     else
         log_step "正在克隆项目到 $INSTALL_DIR..."
-        git clone https://github.com/CloudsOoo/appleid-auto.git "$INSTALL_DIR"
+        git clone -b "$BRANCH_NAME" "$REPO_URL" "$INSTALL_DIR"
     fi
 
     cd "$INSTALL_DIR"
