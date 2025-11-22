@@ -31,7 +31,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.dependencies import get_current_active_user, get_db
+from app.api.dependencies import get_current_active_user, get_db
 from app.models.user import User
 from app.schemas.proxy import (
     ProxyCreate,
@@ -41,7 +41,7 @@ from app.schemas.proxy import (
 )
 from app.services.proxy_service import ProxyService
 
-router = APIRouter(prefix="/proxies", tags=["proxies"])
+router = APIRouter(tags=["代理池"])
 
 
 # ========================================

@@ -43,7 +43,7 @@ from app.core.security import create_access_token, create_refresh_token, decode_
 
 
 # 创建路由器
-router = APIRouter(prefix="/auth", tags=["认证"])
+router = APIRouter(tags=["认证"])
 
 
 # ========== 1. 用户注册 ==========

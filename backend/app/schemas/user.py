@@ -153,3 +153,10 @@ class UserListQuery(BaseModel):
     role: Optional[str] = Field(None, description="角色过滤")
     is_active: Optional[bool] = Field(None, description="激活状态过滤")
     search: Optional[str] = Field(None, description="搜索关键词")
+
+
+# ========== 兼容别名（用于 API 导入一致性） ==========
+# 这些别名确保 auth.py 等模块的导入能够正常工作
+ChangePasswordRequest = ChangePassword
+Verify2FARequest = Verify2FA
+TokenResponse = Token
