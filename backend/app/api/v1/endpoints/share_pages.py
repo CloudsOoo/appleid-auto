@@ -47,10 +47,7 @@ from app.schemas.share_page import (
 
 
 # ========== 创建路由 ==========
-router = APIRouter(
-    prefix="/share-pages",
-    tags=["分享页管理"],
-)
+router = APIRouter(tags=["分享页管理"])
 
 
 # ========================================

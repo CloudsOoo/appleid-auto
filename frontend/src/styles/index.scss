@@ -1,0 +1,186 @@
+/**
+ * 全局样式入口
+ *
+ * 包含：
+ * - 变量导入
+ * - 重置样式
+ * - 通用样式
+ * - 工具类
+ */
+
+@import './variables.scss';
+
+// ==================== 重置样式 ====================
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: $font-size-base;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: $font-family;
+  color: $text-primary;
+  background-color: $bg-light;
+  line-height: 1.5;
+}
+
+// ==================== 通用布局 ====================
+
+.page-container {
+  padding: $spacing-default;
+  min-height: $content-min-height;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-default;
+
+  .page-title {
+    font-size: $font-size-extra-large;
+    font-weight: 600;
+    color: $text-primary;
+    margin: 0;
+  }
+
+  .page-actions {
+    display: flex;
+    gap: $spacing-small;
+  }
+}
+
+// ==================== 卡片样式 ====================
+
+.content-card {
+  background: $bg-color;
+  border-radius: $border-radius-medium;
+  box-shadow: $shadow-light;
+  padding: $spacing-default;
+  margin-bottom: $spacing-default;
+}
+
+// ==================== 表格样式优化 ====================
+
+.el-table {
+  border-radius: $border-radius-base;
+  overflow: hidden;
+
+  th {
+    background-color: $bg-light !important;
+    font-weight: 600;
+  }
+}
+
+// ==================== 表单样式优化 ====================
+
+.form-section {
+  margin-bottom: $spacing-large;
+
+  .section-title {
+    font-size: $font-size-medium;
+    font-weight: 600;
+    color: $text-primary;
+    margin-bottom: $spacing-medium;
+    padding-bottom: $spacing-small;
+    border-bottom: 1px solid $border-light;
+  }
+}
+
+// ==================== 状态标签 ====================
+
+.status-tag {
+  &--success {
+    color: $success-color;
+    background-color: rgba($success-color, 0.1);
+    border-color: rgba($success-color, 0.2);
+  }
+
+  &--warning {
+    color: $warning-color;
+    background-color: rgba($warning-color, 0.1);
+    border-color: rgba($warning-color, 0.2);
+  }
+
+  &--danger {
+    color: $danger-color;
+    background-color: rgba($danger-color, 0.1);
+    border-color: rgba($danger-color, 0.2);
+  }
+
+  &--info {
+    color: $info-color;
+    background-color: rgba($info-color, 0.1);
+    border-color: rgba($info-color, 0.2);
+  }
+}
+
+// ==================== 工具类 ====================
+
+// 文本对齐
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+// 文本颜色
+.text-primary { color: $text-primary; }
+.text-regular { color: $text-regular; }
+.text-secondary { color: $text-secondary; }
+.text-success { color: $success-color; }
+.text-warning { color: $warning-color; }
+.text-danger { color: $danger-color; }
+
+// 间距
+.mt-0 { margin-top: 0; }
+.mt-1 { margin-top: $spacing-mini; }
+.mt-2 { margin-top: $spacing-small; }
+.mt-3 { margin-top: $spacing-medium; }
+.mt-4 { margin-top: $spacing-default; }
+
+.mb-0 { margin-bottom: 0; }
+.mb-1 { margin-bottom: $spacing-mini; }
+.mb-2 { margin-bottom: $spacing-small; }
+.mb-3 { margin-bottom: $spacing-medium; }
+.mb-4 { margin-bottom: $spacing-default; }
+
+// Flex 布局
+.flex { display: flex; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-1 { flex: 1; }
+
+// ==================== 动画 ====================
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity $transition-duration $transition-timing;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all $transition-duration $transition-timing;
+}
+
+.slide-fade-enter-from {
+  transform: translateX(-10px);
+  opacity: 0;
+}
+
+.slide-fade-leave-to {
+  transform: translateX(10px);
+  opacity: 0;
+}

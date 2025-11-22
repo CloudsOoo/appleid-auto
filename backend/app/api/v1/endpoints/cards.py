@@ -43,10 +43,7 @@ from app.schemas.card import (
 
 
 # ========== 创建路由 ==========
-router = APIRouter(
-    prefix="/cards",
-    tags=["卡密管理"],
-)
+router = APIRouter(tags=["卡密管理"])
 
 
 # ========================================

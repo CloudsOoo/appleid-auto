@@ -29,7 +29,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.dependencies import get_current_active_user, get_db
+from app.api.dependencies import get_current_active_user, get_db
 from app.models.user import User
 from app.schemas.node import (
     NodeRegister,
@@ -38,7 +38,7 @@ from app.schemas.node import (
 )
 from app.services.node_service import NodeService
 
-router = APIRouter(prefix="/nodes", tags=["nodes"])
+router = APIRouter(tags=["节点管理"])
 
 
 # ========================================

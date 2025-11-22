@@ -82,7 +82,7 @@ services:
       - postgres
       - redis
       - backend
-    command: celery -A app.tasks.celery_app worker --loglevel=info --concurrency=4
+    command: celery -A app.celery_app worker --loglevel=info --concurrency=4
     networks:
       - appleid_network
 
@@ -101,7 +101,7 @@ services:
       - postgres
       - redis
       - backend
-    command: celery -A app.tasks.celery_app beat --loglevel=info
+    command: celery -A app.celery_app beat --loglevel=info
     networks:
       - appleid_network
 
@@ -118,7 +118,7 @@ services:
     depends_on:
       - redis
       - celery_worker
-    command: celery -A app.tasks.celery_app flower --port=5555
+    command: celery -A app.celery_app flower --port=5555
     networks:
       - appleid_network
 

@@ -25,7 +25,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy import func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.dependencies import get_current_active_user, get_current_admin, get_db
+from app.api.dependencies import get_current_active_user, get_current_admin, get_db
 from app.models.user import User
 from app.models.apple_account import AppleAccount
 from app.models.task import UnlockTask
@@ -35,7 +35,7 @@ from app.models.node import Node
 from app.models.proxy import Proxy
 from app.models.permission import UserPermission
 
-router = APIRouter(prefix="/stats", tags=["stats"])
+router = APIRouter(tags=["统计"])
 
 
 # ========================================
