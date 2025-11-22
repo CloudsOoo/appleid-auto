@@ -202,14 +202,53 @@ generate_secret_key() {
     fi
 }
 
+# 检测是否为交互式终端
+is_interactive() {
+    # 检查是否有 tty 可用
+    if [ -t 0 ]; then
+        return 0
+    else
+        # 尝试从 /dev/tty 读取
+        if [ -e /dev/tty ]; then
+            return 0
+        fi
+        return 1
+    fi
+}
+
+# 交互式读取（支持 curl | bash 模式）
+interactive_read() {
+    local prompt="$1"
+    local var_name="$2"
+    local default="$3"
+    local secret="$4"
+
+    if is_interactive; then
+        if [ "$secret" = "true" ]; then
+            read -sp "$prompt" "$var_name" </dev/tty 2>/dev/null || eval "$var_name=''"
+            echo ""
+        else
+            read -p "$prompt" "$var_name" </dev/tty 2>/dev/null || eval "$var_name=''"
+        fi
+    fi
+
+    # 如果为空则使用默认值
+    eval "[ -z \"\$$var_name\" ] && $var_name='$default'"
+}
+
 # 克隆或更新项目
 clone_project() {
     INSTALL_DIR="${INSTALL_DIR:-$HOME/appleid-auto}"
 
     if [ -d "$INSTALL_DIR" ]; then
         log_info "项目目录已存在: $INSTALL_DIR"
-        read -p "是否更新到最新版本？(y/n) " -n 1 -r
-        echo
+        if is_interactive; then
+            read -p "是否更新到最新版本？(y/n) " -n 1 -r </dev/tty 2>/dev/null || REPLY="y"
+            echo
+        else
+            log_info "非交互模式，自动更新到最新版本"
+            REPLY="y"
+        fi
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             cd "$INSTALL_DIR"
             git pull origin "$BRANCH_NAME" 2>/dev/null || git pull origin main 2>/dev/null || true
@@ -231,9 +270,14 @@ configure_env() {
 
     if [ -f "$ENV_FILE" ]; then
         log_info "环境配置文件已存在"
-        read -p "是否重新生成配置？(y/n) " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        if is_interactive; then
+            read -p "是否重新生成配置？(y/n) " -n 1 -r </dev/tty 2>/dev/null || REPLY="n"
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                return 0
+            fi
+        else
+            log_info "非交互模式，保留现有配置"
             return 0
         fi
     fi
@@ -244,17 +288,17 @@ configure_env() {
 
     # 询问管理员信息
     echo ""
-    echo -e "${PURPLE}请设置管理员信息（直接回车使用默认值）：${NC}"
-
-    read -p "管理员用户名 [admin]: " ADMIN_USERNAME
-    ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
-
-    read -p "管理员邮箱 [admin@example.com]: " ADMIN_EMAIL
-    ADMIN_EMAIL=${ADMIN_EMAIL:-admin@example.com}
-
-    read -sp "管理员密码 [Admin@123456]: " ADMIN_PASSWORD
-    echo
-    ADMIN_PASSWORD=${ADMIN_PASSWORD:-Admin@123456}
+    if is_interactive; then
+        echo -e "${PURPLE}请设置管理员信息（直接回车使用默认值）：${NC}"
+        interactive_read "管理员用户名 [admin]: " ADMIN_USERNAME "admin" "false"
+        interactive_read "管理员邮箱 [admin@example.com]: " ADMIN_EMAIL "admin@example.com" "false"
+        interactive_read "管理员密码 [Admin@123456]: " ADMIN_PASSWORD "Admin@123456" "true"
+    else
+        log_info "非交互模式，使用默认管理员配置"
+        ADMIN_USERNAME="admin"
+        ADMIN_EMAIL="admin@example.com"
+        ADMIN_PASSWORD="Admin@123456"
+    fi
 
     # 生成配置文件
     cat > "$ENV_FILE" << EOF
