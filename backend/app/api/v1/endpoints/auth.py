@@ -33,10 +33,10 @@ from app.schemas.user import (
     UserLogin,
     UserResponse,
     UserUpdate,
-    ChangePasswordRequest,
+    ChangePassword,
     Enable2FAResponse,
-    Verify2FARequest,
-    TokenResponse,
+    Verify2FA,
+    Token,
 )
 from app.models.user import User
 from app.core.security import create_access_token, create_refresh_token, decode_token
@@ -121,7 +121,7 @@ async def register(
 
 @router.post(
     "/login",
-    response_model=TokenResponse,
+    response_model=Token,
     summary="用户登录",
     description="使用用户名和密码登录，返回访问令牌",
 )
@@ -129,7 +129,7 @@ async def login(
     credentials: UserLogin,
     request: Request,
     db: AsyncSession = Depends(get_db)
-) -> TokenResponse:
+) -> Token:
     """
     用户登录接口
 
@@ -192,7 +192,7 @@ async def login(
         client_ip = request.client.host if request.client else None
         await AuthService.update_last_login(db, user.id, client_ip)
 
-        return TokenResponse(
+        return Token(
             access_token=access_token,
             refresh_token=refresh_token,
             token_type="bearer",
@@ -217,14 +217,14 @@ async def login(
 
 @router.post(
     "/refresh",
-    response_model=TokenResponse,
+    response_model=Token,
     summary="刷新访问令牌",
     description="使用 refresh_token 获取新的 access_token",
 )
 async def refresh_token(
     refresh_token: str,
     db: AsyncSession = Depends(get_db)
-) -> TokenResponse:
+) -> Token:
     """
     刷新令牌接口
 
@@ -292,7 +292,7 @@ async def refresh_token(
         new_access_token = create_access_token(data={"sub": user.id})
         new_refresh_token = create_refresh_token(data={"sub": user.id})
 
-        return TokenResponse(
+        return Token(
             access_token=new_access_token,
             refresh_token=new_refresh_token,
             token_type="bearer",
@@ -403,7 +403,7 @@ async def get_current_user_info(
     description="修改当前用户的密码",
 )
 async def change_password(
-    password_data: ChangePasswordRequest,
+    password_data: ChangePassword,
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ) -> dict:
@@ -558,7 +558,7 @@ async def enable_2fa(
     description="验证 2FA 验证码以完成启用",
 )
 async def verify_2fa(
-    verify_data: Verify2FARequest,
+    verify_data: Verify2FA,
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ) -> dict:
@@ -628,7 +628,7 @@ async def verify_2fa(
     description="关闭当前用户的 2FA",
 )
 async def disable_2fa(
-    verify_data: Verify2FARequest,
+    verify_data: Verify2FA,
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db)
 ) -> dict:

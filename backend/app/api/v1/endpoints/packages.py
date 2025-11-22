@@ -29,7 +29,8 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.v1.dependencies import get_current_admin, get_db
+from app.api.dependencies import get_current_admin
+from app.db.database import get_db
 from app.models.user import User
 from app.schemas.package import (
     PackageCreate,

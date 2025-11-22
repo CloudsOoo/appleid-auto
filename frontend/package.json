@@ -26,6 +26,7 @@
     "eslint": "^8.54.0",
     "eslint-plugin-vue": "^9.18.1",
     "prettier": "^3.1.0",
-    "sass": "^1.69.5"
+    "sass": "^1.69.5",
+    "terser": "^5.36.0"
   }
 }

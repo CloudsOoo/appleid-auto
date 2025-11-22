@@ -43,7 +43,7 @@ export type { Theme, Language } from './app'
  * 初始化所有 Store
  * 在应用启动时调用，恢复持久化状态
  */
-export function initStores() {
+export async function initStores() {
   // 导入 Store
   const { useUserStore } = await import('./user')
   const { useAppStore } = await import('./app')
