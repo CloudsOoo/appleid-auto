@@ -17,6 +17,7 @@
 # 项目配置
 REPO_URL="https://github.com/CloudsOoo/appleid-auto.git"
 BRANCH_NAME="claude/appleid-auto/main"
+DOCKER_COMPOSE=""  # 将在检测后设置
 
 set -e
 
@@ -135,20 +136,29 @@ install_docker() {
     log_info "Docker 安装完成"
 }
 
+# 检测并设置 Docker Compose 命令
+detect_docker_compose() {
+    # 优先使用新版 docker compose 命令
+    if docker compose version >/dev/null 2>&1; then
+        DOCKER_COMPOSE="docker compose"
+        return 0
+    fi
+    # 回退到旧版 docker-compose
+    if command_exists docker-compose; then
+        DOCKER_COMPOSE="docker-compose"
+        return 0
+    fi
+    return 1
+}
+
 # 安装 Docker Compose
 install_docker_compose() {
-    if command_exists docker-compose || docker compose version >/dev/null 2>&1; then
-        log_info "Docker Compose 已安装"
+    if detect_docker_compose; then
+        log_info "Docker Compose 已安装 ($DOCKER_COMPOSE)"
         return 0
     fi
 
     log_step "正在安装 Docker Compose..."
-
-    # 尝试使用 Docker 插件版本
-    if docker compose version >/dev/null 2>&1; then
-        log_info "Docker Compose (插件版) 已可用"
-        return 0
-    fi
 
     # 安装独立版本
     COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep '"tag_name"' | sed -E 's/.*"([^"]+)".*/\1/')
@@ -159,6 +169,8 @@ install_docker_compose() {
     sudo curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
     sudo chmod +x /usr/local/bin/docker-compose
 
+    # 重新检测
+    detect_docker_compose
     log_info "Docker Compose 安装完成"
 }
 
@@ -432,11 +444,11 @@ start_services() {
 
     # 使用开发配置启动（无 SSL）
     if [ -f "docker-compose.dev.yml" ]; then
-        docker-compose -f docker-compose.dev.yml down 2>/dev/null || true
-        docker-compose -f docker-compose.dev.yml up -d --build
+        $DOCKER_COMPOSE -f docker-compose.dev.yml down 2>/dev/null || true
+        $DOCKER_COMPOSE -f docker-compose.dev.yml up -d --build
     else
-        docker-compose down 2>/dev/null || true
-        docker-compose up -d --build
+        $DOCKER_COMPOSE down 2>/dev/null || true
+        $DOCKER_COMPOSE up -d --build
     fi
 
     log_info "等待服务启动..."
@@ -449,7 +461,7 @@ init_database() {
 
     # 等待数据库就绪
     for i in {1..30}; do
-        if docker-compose -f docker-compose.dev.yml exec -T postgres pg_isready -U postgres >/dev/null 2>&1; then
+        if $DOCKER_COMPOSE -f docker-compose.dev.yml exec -T postgres pg_isready -U postgres >/dev/null 2>&1; then
             break
         fi
         echo -n "."
@@ -458,7 +470,7 @@ init_database() {
     echo ""
 
     # 执行初始化脚本
-    if docker-compose -f docker-compose.dev.yml exec -T backend python scripts/init_db.py 2>/dev/null; then
+    if $DOCKER_COMPOSE -f docker-compose.dev.yml exec -T backend python scripts/init_db.py 2>/dev/null; then
         log_info "数据库初始化完成"
     else
         log_warn "数据库可能已初始化，跳过"
@@ -484,7 +496,7 @@ health_check() {
     # 检查服务状态
     echo ""
     echo -e "${CYAN}服务状态：${NC}"
-    docker-compose -f docker-compose.dev.yml ps 2>/dev/null || docker-compose ps
+    $DOCKER_COMPOSE -f docker-compose.dev.yml ps 2>/dev/null || $DOCKER_COMPOSE ps
 }
 
 # 打印完成信息
@@ -513,16 +525,16 @@ print_success() {
     echo ""
     echo -e "${CYAN}常用命令：${NC}"
     echo -e "  # 查看日志"
-    echo -e "  cd $INSTALL_DIR && docker-compose -f docker-compose.dev.yml logs -f"
+    echo -e "  cd $INSTALL_DIR && $DOCKER_COMPOSE -f docker-compose.dev.yml logs -f"
     echo ""
     echo -e "  # 停止服务"
-    echo -e "  cd $INSTALL_DIR && docker-compose -f docker-compose.dev.yml down"
+    echo -e "  cd $INSTALL_DIR && $DOCKER_COMPOSE -f docker-compose.dev.yml down"
     echo ""
     echo -e "  # 重启服务"
-    echo -e "  cd $INSTALL_DIR && docker-compose -f docker-compose.dev.yml restart"
+    echo -e "  cd $INSTALL_DIR && $DOCKER_COMPOSE -f docker-compose.dev.yml restart"
     echo ""
     echo -e "  # 更新系统"
-    echo -e "  cd $INSTALL_DIR && git pull && docker-compose -f docker-compose.dev.yml up -d --build"
+    echo -e "  cd $INSTALL_DIR && git pull && $DOCKER_COMPOSE -f docker-compose.dev.yml up -d --build"
     echo ""
     echo -e "${YELLOW}⚠️  安全提示：${NC}"
     echo -e "  1. 首次登录后请立即修改密码"
@@ -542,8 +554,10 @@ uninstall() {
 
     if [ "$confirm" = "YES" ]; then
         cd "$INSTALL_DIR" 2>/dev/null || true
-        docker-compose -f docker-compose.dev.yml down -v 2>/dev/null || true
-        docker-compose down -v 2>/dev/null || true
+        # 检测 docker compose 命令
+        detect_docker_compose 2>/dev/null || true
+        $DOCKER_COMPOSE -f docker-compose.dev.yml down -v 2>/dev/null || true
+        $DOCKER_COMPOSE down -v 2>/dev/null || true
         cd ~
         rm -rf "$INSTALL_DIR"
         log_info "卸载完成"
