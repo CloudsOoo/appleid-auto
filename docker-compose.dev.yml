@@ -1,0 +1,136 @@
+version: '3.8'
+
+# 开发环境 Docker Compose 配置
+# 使用 _dev 后缀区分容器名称
+
+services:
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: appleid_postgres_dev
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: appleid_auto
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - appleid_network_dev
+
+  # Redis 缓存和消息队列
+  redis:
+    image: redis:7-alpine
+    container_name: appleid_redis_dev
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data_dev:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - appleid_network_dev
+
+  # FastAPI 后端
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: appleid_backend_dev
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - upload_data_dev:/app/uploads
+      - log_data_dev:/app/logs
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - appleid_network_dev
+
+  # Celery Worker
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: appleid_celery_worker_dev
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - upload_data_dev:/app/uploads
+      - log_data_dev:/app/logs
+    depends_on:
+      - postgres
+      - redis
+      - backend
+    command: celery -A app.celery_app worker --loglevel=info --concurrency=4
+    networks:
+      - appleid_network_dev
+
+  # Celery Beat (定时任务)
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: appleid_celery_beat_dev
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - log_data_dev:/app/logs
+    depends_on:
+      - postgres
+      - redis
+      - backend
+    command: celery -A app.celery_app beat --loglevel=info
+    networks:
+      - appleid_network_dev
+
+  # Flower (Celery 监控)
+  flower:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: appleid_flower_dev
+    env_file:
+      - ./backend/.env
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+      - celery_worker
+    command: celery -A app.celery_app flower --port=5555
+    networks:
+      - appleid_network_dev
+
+volumes:
+  postgres_data_dev:
+  redis_data_dev:
+  upload_data_dev:
+  log_data_dev:
+
+networks:
+  appleid_network_dev:
+    driver: bridge
