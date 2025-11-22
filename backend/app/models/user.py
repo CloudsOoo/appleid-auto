@@ -56,5 +56,10 @@ class User(Base):
         Index("idx_users_role_active", "role", "is_active"),
     )
 
+    @property
+    def is_admin(self) -> bool:
+        """检查用户是否是管理员"""
+        return self.role == "admin"
+
     def __repr__(self):
         return f"<User(id={self.id}, username='{self.username}', role='{self.role}')>"

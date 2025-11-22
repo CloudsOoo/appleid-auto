@@ -90,3 +90,8 @@ export function nodeHeartbeatApi(data: NodeHeartbeatRequest) {
 export function deleteNodeApi(id: number) {
   return del(`/nodes/${id}`)
 }
+
+/**
+ * 创建节点（registerNodeApi 别名）
+ */
+export const createNodeApi = registerNodeApi

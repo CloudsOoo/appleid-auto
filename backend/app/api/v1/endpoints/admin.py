@@ -312,7 +312,7 @@ async def update_system_setting(
 
     await db.commit()
 
-    return {"code": 200, "message": f"设置 {key} 已更新"}
+    return MessageResponse(message=f"设置 {key} 已更新")
 
 
 # ========================================
@@ -419,7 +419,7 @@ async def init_system(
     # 检查是否已初始化
     existing_settings = await db.scalar(select(func.count(SystemSetting.id)))
     if existing_settings and existing_settings > 0:
-        return {"code": 200, "message": "系统已初始化，无需重复操作"}
+        return MessageResponse(message="系统已初始化，无需重复操作")
 
     # 创建默认系统设置
     default_settings = [
@@ -494,7 +494,7 @@ async def init_system(
 
     await db.commit()
 
-    return {"code": 200, "message": "系统初始化完成"}
+    return MessageResponse(message="系统初始化完成")
 
 
 # ========================================

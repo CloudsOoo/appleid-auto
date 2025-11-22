@@ -304,7 +304,7 @@ async def update_user_status(
     await db.commit()
 
     status_text = "启用" if is_active else "禁用"
-    return {"code": 200, "message": f"用户已{status_text}"}
+    return MessageResponse(message=f"用户已{status_text}")
 
 
 # ========================================
@@ -362,7 +362,7 @@ async def delete_user(
     await db.delete(user)
     await db.commit()
 
-    return {"code": 200, "message": "用户已删除"}
+    return MessageResponse(message="用户已删除")
 
 
 # ========================================

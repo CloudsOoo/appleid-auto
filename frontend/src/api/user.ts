@@ -171,3 +171,18 @@ export function disableUserApi(id: number) {
 export function enableUserApi(id: number) {
   return post(`/admin/users/${id}/enable`)
 }
+
+/**
+ * 修改密码请求
+ */
+export interface ChangePasswordRequest {
+  old_password: string
+  new_password: string
+}
+
+/**
+ * 修改当前用户密码
+ */
+export function changePasswordApi(data: ChangePasswordRequest) {
+  return post('/auth/change-password', data)
+}

@@ -1,4 +1,4 @@
-import { get, post } from '@/utils/request'
+import { get, post, put, del } from '@/utils/request'
 
 /**
  * 卡密相关 API
@@ -101,4 +101,26 @@ export function revokeCardApi(id: number) {
  */
 export function extendCardApi(id: number, days: number) {
   return post(`/cards/admin/${id}/extend`, { days })
+}
+
+/**
+ * 更新卡密状态请求
+ */
+export interface UpdateCardRequest {
+  status?: string
+  package_id?: number
+}
+
+/**
+ * 更新卡密（管理员）
+ */
+export function updateCardApi(id: number, data: UpdateCardRequest) {
+  return put(`/cards/admin/${id}`, data)
+}
+
+/**
+ * 删除卡密（管理员）
+ */
+export function deleteCardApi(id: number) {
+  return del(`/cards/admin/${id}`)
 }

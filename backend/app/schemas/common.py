@@ -66,6 +66,13 @@ class StatsResponse(BaseModel):
     active_proxies: int = Field(0, description="活跃代理数")
 
 
+# ========== 消息响应 ==========
+class MessageResponse(BaseModel):
+    """消息响应模型"""
+    message: str = Field(..., description="消息内容")
+    success: bool = Field(True, description="是否成功")
+
+
 # ========== 健康检查响应 ==========
 class HealthResponse(BaseModel):
     """健康检查响应"""

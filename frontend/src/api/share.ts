@@ -136,3 +136,8 @@ export function getSharePageStatsApi(id: number) {
 export function accessSharePageApi(slug: string, password?: string) {
   return get<SharePage>(`/public/share/${slug}`, { password })
 }
+
+/**
+ * 获取公开分享页（别名）
+ */
+export const getSharePagePublicApi = accessSharePageApi
