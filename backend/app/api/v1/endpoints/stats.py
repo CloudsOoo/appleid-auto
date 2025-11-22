@@ -36,7 +36,7 @@ from app.models.node import Node
 from app.models.proxy import Proxy
 from app.models.permission import UserPermission
 
-router = APIRouter(prefix="/stats", tags=["stats"])
+router = APIRouter()
 
 
 # ========================================

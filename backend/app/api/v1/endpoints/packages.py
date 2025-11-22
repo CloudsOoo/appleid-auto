@@ -39,7 +39,7 @@ from app.schemas.package import (
 )
 from app.services.package_service import PackageService
 
-router = APIRouter(prefix="/packages", tags=["packages"])
+router = APIRouter()
 
 
 # ========================================

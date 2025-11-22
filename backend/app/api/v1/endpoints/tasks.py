@@ -38,10 +38,7 @@ from app.schemas.task import (
 
 
 # ========== 创建路由 ==========
-router = APIRouter(
-    prefix="/tasks",
-    tags=["任务管理"],
-)
+router = APIRouter()
 
 
 # ========================================

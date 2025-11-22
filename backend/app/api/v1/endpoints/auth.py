@@ -33,17 +33,21 @@ from app.schemas.user import (
     UserLogin,
     UserResponse,
     UserUpdate,
-    ChangePasswordRequest,
+    ChangePassword,
     Enable2FAResponse,
-    Verify2FARequest,
-    TokenResponse,
+    Verify2FA,
+    Token,
 )
+# 别名兼容
+ChangePasswordRequest = ChangePassword
+Verify2FARequest = Verify2FA
+TokenResponse = Token
 from app.models.user import User
 from app.core.security import create_access_token, create_refresh_token, decode_token
 
 
 # 创建路由器
-router = APIRouter(prefix="/auth", tags=["认证"])
+router = APIRouter()
 
 
 # ========== 1. 用户注册 ==========

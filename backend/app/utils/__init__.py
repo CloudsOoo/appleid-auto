@@ -13,8 +13,9 @@ from app.utils.encryption import (
     generate_api_key,
 )
 from app.utils.html_filter import (
-    sanitize_html,
-    strip_all_html,
+    html_filter,
+    clean_html,
+    validate_custom_html,
 )
 
 __all__ = [
@@ -27,6 +28,7 @@ __all__ = [
     "generate_random_key",
     "generate_api_key",
     # HTML 过滤
-    "sanitize_html",
-    "strip_all_html",
+    "html_filter",
+    "clean_html",
+    "validate_custom_html",
 ]

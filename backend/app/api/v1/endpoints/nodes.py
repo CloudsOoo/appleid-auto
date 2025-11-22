@@ -39,7 +39,7 @@ from app.schemas.node import (
 )
 from app.services.node_service import NodeService
 
-router = APIRouter(prefix="/nodes", tags=["nodes"])
+router = APIRouter()
 
 
 # ========================================

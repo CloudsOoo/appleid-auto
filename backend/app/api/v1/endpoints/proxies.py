@@ -42,7 +42,7 @@ from app.schemas.proxy import (
 )
 from app.services.proxy_service import ProxyService
 
-router = APIRouter(prefix="/proxies", tags=["proxies"])
+router = APIRouter()
 
 
 # ========================================

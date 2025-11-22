@@ -48,10 +48,7 @@ from app.schemas.account import (
 
 
 # ========== 创建路由 ==========
-router = APIRouter(
-    prefix="/accounts",
-    tags=["Apple ID 管理"],
-)
+router = APIRouter()
 
 
 # ========================================

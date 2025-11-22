@@ -37,7 +37,6 @@ from app.schemas.user import (
     UserListQuery,
 )
 from app.schemas.common import PaginatedResponse, MessageResponse
-from app.core.security import hash_password
 
 
 # 创建路由器
