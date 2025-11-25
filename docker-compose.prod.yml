@@ -1,0 +1,219 @@
+version: '3.8'
+
+# ============================================================
+# Apple ID 自动解锁系统 - 生产环境 Docker Compose 配置
+# 使用方法：docker compose -f docker-compose.prod.yml up -d
+# ============================================================
+
+services:
+  # PostgreSQL 数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: appleid_postgres_prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-appleid_auto}
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - appleid_network_prod
+    # 生产环境不暴露端口到主机
+    # ports:
+    #   - "5432:5432"
+
+  # Redis 缓存和消息队列
+  redis:
+    image: redis:7-alpine
+    container_name: appleid_redis_prod
+    restart: always
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data_prod:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - appleid_network_prod
+
+  # FastAPI 后端
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: appleid-backend:prod
+    container_name: appleid_backend_prod
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-appleid_auto}
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-change-me-in-production}
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${JWT_EXPIRE:-60}
+      - CORS_ORIGINS=${CORS_ORIGINS:-["http://localhost"]}
+      - LOG_LEVEL=INFO
+      - WORKERS=4
+    volumes:
+      - upload_data_prod:/app/uploads
+      - log_data_prod:/app/logs
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo 'Running database migrations...' &&
+        python -c 'from app.db.session import engine; from app.db.base import Base; import asyncio; asyncio.run(Base.metadata.create_all(bind=engine))' 2>/dev/null || true &&
+        echo 'Starting server...' &&
+        uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - appleid_network_prod
+
+  # Celery Worker (可扩展多实例)
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: appleid-backend:prod
+    container_name: appleid_celery_worker_prod
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-appleid_auto}
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-change-me-in-production}
+    volumes:
+      - upload_data_prod:/app/uploads
+      - log_data_prod:/app/logs
+    depends_on:
+      - postgres
+      - redis
+      - backend
+    command: celery -A app.celery_app worker --loglevel=info --concurrency=4
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+    networks:
+      - appleid_network_prod
+
+  # Celery Beat (定时任务调度器)
+  celery_beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: appleid-backend:prod
+    container_name: appleid_celery_beat_prod
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-appleid_auto}
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://redis:6379/2
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-change-me-in-production}
+    volumes:
+      - log_data_prod:/app/logs
+    depends_on:
+      - postgres
+      - redis
+      - celery_worker
+    command: celery -A app.celery_app beat --loglevel=info
+    networks:
+      - appleid_network_prod
+
+  # Flower (Celery 监控面板)
+  flower:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: appleid-backend:prod
+    container_name: appleid_flower_prod
+    restart: always
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/1
+      - FLOWER_BASIC_AUTH=${FLOWER_USER:-admin}:${FLOWER_PASSWORD:-admin}
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+      - celery_worker
+    command: celery -A app.celery_app flower --port=5555 --persistent=True --db=/app/flower.db
+    networks:
+      - appleid_network_prod
+
+  # 前端 (Nginx + Vue)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: appleid-frontend:prod
+    container_name: appleid_frontend_prod
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    networks:
+      - appleid_network_prod
+
+  # Nginx 反向代理 (可选，用于 SSL 终止)
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: appleid_nginx_prod
+  #   restart: always
+  #   volumes:
+  #     - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+  #     - ./nginx/ssl:/etc/nginx/ssl:ro
+  #   ports:
+  #     - "443:443"
+  #   depends_on:
+  #     - frontend
+  #     - backend
+  #   networks:
+  #     - appleid_network_prod
+
+volumes:
+  postgres_data_prod:
+    driver: local
+  redis_data_prod:
+    driver: local
+  upload_data_prod:
+    driver: local
+  log_data_prod:
+    driver: local
+
+networks:
+  appleid_network_prod:
+    driver: bridge
